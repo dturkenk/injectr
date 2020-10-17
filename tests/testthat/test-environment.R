@@ -103,6 +103,20 @@ test_that("registering a function works", {
   expect_equal(foo, .injectr.container$foo$object)
 })
 
+test_that("registering an anonymous function without a name fails", {
+  clear()
+
+  expect_error(register(function() { }))
+})
+
+test_that("registering an anonymous function with a provided name works", {
+  clear()
+
+  register(function() { }, name = "foo")
+
+  expect_true(exists("foo", where = .injectr.container))
+})
+
 test_that("registering a generator function works", {
   clear()
 
@@ -111,20 +125,24 @@ test_that("registering a generator function works", {
 
   register(foo, generator = TRUE)
 
-  print(.injectr.container$foo)
-
   expect_true(exists("foo", where = .injectr.container))
-  
+
   expect_equal(foo, .injectr.container$foo$object)
   expect_true(.injectr.container$foo$generator)
 })
 
-
-
-test_that("registering an anonymous generator function without a name fails", {
-
-})
-
 test_that("injecting a generator function returns the results of the function", {
+  clear()
 
+  foo <- function() {
+    return("Hello World!")
+  }
+
+  register(foo, generator = TRUE)
+
+  inject("foo", target = bar)
+
+  expect_true(exists("bar", where = environment()))
+
+  expect_equal(bar, foo())
 })

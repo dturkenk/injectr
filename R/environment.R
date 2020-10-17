@@ -3,7 +3,8 @@
 #' Register an object to inject
 #'
 #' @param object the object to inject
-#' @param name the name to use for resolution. Defaults to the passed in object
+#' @param name the name to use for resolution. Defaults to the passed in object reference
+#' @param generator whether the passed in object should be used as a generator function upon injection
 #'
 #' @export
 register <- function(object, 
@@ -11,6 +12,10 @@ register <- function(object,
                     generator = FALSE) {
     if (is.null(name)) {
         name <- as.character(substitute(object))
+    }
+
+    if(is.function(object) && startsWith(name, "function")) {
+        stop("Anonymous functions cannot be registered")
     }
 
     wrapper <- .object_wrapper(object, "generator" = generator)
@@ -48,7 +53,13 @@ inject <- function(name, target = NULL) {
         name <- as.character(substitute(target))
     }
 
-    assign(name, wrapper$object, envir = parent.frame())
+    if (!is.null(wrapper$generator) && wrapper$generator) {
+        object <- wrapper$object()
+    } else {
+        object <- wrapper$object
+    }
+
+    assign(name, object, envir = parent.frame())
 }
 
 #' Clear the entire container
@@ -58,10 +69,8 @@ clear <- function() {
     rm(list = ls(envir = .injectr.container), envir = .injectr.container)
 }
 
-
+#' Wrapper for object to allow storing of arbitrary configuration information
 .object_wrapper <- function(object, ...) {
     if (is.null(object)) stop("object must be provided")
     structure(list("object" = object, ...), class = "object_wrapper")
 }
-
-
