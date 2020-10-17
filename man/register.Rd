@@ -4,12 +4,14 @@
 \alias{register}
 \title{Register an object to inject}
 \usage{
-register(object, name = NULL)
+register(object, name = NULL, generator = FALSE)
 }
 \arguments{
 \item{object}{the object to inject}
 
-\item{name}{the name to use for resolution. Defaults to the passed in object}
+\item{name}{the name to use for resolution. Defaults to the passed in object reference}
+
+\item{generator}{whether the passed in object should be used as a generator function upon injection}
 }
 \description{
 Register an object to inject
